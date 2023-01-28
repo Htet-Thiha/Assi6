@@ -1,0 +1,233 @@
+#include "stdio.h"
+#include "stdlib.h"
+
+#define amount 1000
+
+struct worker {
+
+    int id;
+    int age;
+    char name[50];
+    char password[50];
+    char email[50];
+
+};
+
+struct worker info[amount];
+
+int registrationCount = 0;
+
+int charCounting(char charArr[]);
+int gmailValidtation(char useremail[50]);
+int compare(char first[] , char second[] );
+int Ezpassword(char password[]);
+void registration();
+void recordingAllData();
+void LoadingAllData();
+void login();
+void LandingPage();
+void printingAllData();
+
+int main(){
+
+    LoadingAllData();
+    printingAllData();
+    LandingPage();
+    recordingAllData();
+
+    return 0;
+
+}
+
+int charCounting(char charArr[]){
+    int count=0;
+    for(int i=0 ; i<50 ; i++){
+        if(charArr[i]=='\0'){
+            break;
+        }
+        count++;
+    }
+    return count;
+}
+
+int gmailValidtation(char useremail[50]){
+    char validtation[10]={'@','g','m','a','i','l','.','c','o','m'};
+    int numOfUseremail = charCounting(useremail);
+
+    for(int i=0 ; i<numOfUseremail-1; i++){
+
+        if(useremail[i]=='@'){
+            int tempindex=0;
+            for(int j=i ; j<numOfUseremail-1 ; j++){
+
+                if(useremail[j]!=validtation[tempindex]){
+                    printf("invalid email\n");
+                    return 0;
+                }
+                tempindex++;
+            }
+            if(tempindex+1 == 10){
+                return 1;
+            }
+            return 0;
+        }
+    }
+    return 0;
+}
+
+int compare(char first[] , char second[] ){
+    int fcount = charCounting(first);
+    int scount = charCounting(second);
+
+    if(fcount == scount){
+        for(int i =0 ; i< fcount-1 ; i++){
+            if(first[i]!= second[i]){
+                return 0;
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int Ezpassword(char password[]){
+    int temp = charCounting(password);
+    int smallAlpha = -1;
+    int bigAlpha = -1;
+    int numAlpha =-1;
+    int otherAlpha =-1;
+    for(int i = 0 ; i<temp-1; i++){
+        int check = password[i];
+        if(check>97 && check<122){
+            smallAlpha ++;
+        }else if( check>65 && check<90){
+            bigAlpha ++;
+        }else if ( check >48 && check<57){
+            numAlpha ++;
+        }
+        otherAlpha ++;
+    }
+    if(smallAlpha == temp || bigAlpha == temp || numAlpha == temp || otherAlpha == temp){
+        printf("Your password id easy to guess!\n");
+        return 0;
+    }else if(smallAlpha == -1 || bigAlpha == -1 || numAlpha == -1 || otherAlpha == -1){
+        printf("Your password id easy to guess!\n");
+        return 0;
+    }
+    return 1;
+}
+
+void registration(){
+    int lpoint = 0;
+    int Echeck = 0;
+    printf("Enter your email :");
+    scanf(" %[^\n]",info[registrationCount].email);
+    for(int i=0; i<registrationCount ; i++){
+        if(compare(info[registrationCount].email,info[i].email)){
+            Echeck=1;
+            printf("Email already used\n");
+        }
+    }
+    if(gmailValidtation(info[registrationCount].email) && Echeck == 0){
+
+        printf("Enter your age :");
+        scanf("%d",&info[registrationCount].age);
+
+        printf("Enter your name :");
+        scanf(" %[^\n]",info[registrationCount].name);
+
+        while (lpoint == 0){
+            printf("Password must be include\n 1 big character \n 1 small character \n 1 number \n 1 special character\n");
+            printf("Enter your password :");
+
+            scanf(" %[^\n]",info[registrationCount].password);
+            if(Ezpassword(info[registrationCount].password)){
+                break;
+            }
+        }
+
+        info[registrationCount].id =registrationCount +1;
+        registrationCount++;
+        lpoint =1;
+    }
+    if(lpoint == 0){
+        registration();
+    }
+
+}
+
+void recordingAllData(){
+
+    FILE *fpoint = fopen("dataBase.txt","w");
+    for(int i=0 ; i<registrationCount ; i++){
+        fprintf(fpoint,"%d %d %s %s %s\n",info[i].id , info[i].age, info[i].name , info[i].email, info[i].password);
+    }
+    fclose(fpoint);
+}
+
+void LoadingAllData(){
+    FILE *fpoint = fopen("dataBase.txt","r");
+    if(fpoint == NULL){
+        printf("Error at loading!\n");
+    }for(int i=0 ; i<amount ; i++){
+        fscanf(fpoint,"%d %d %s %s %s",&info[i].id , &info[i].age, &info[i].name , &info[i].email, &info[i].password);
+        if(info[i].name[0]=='\0'){
+            break;
+        }
+        registrationCount = i +1;
+    }
+
+}
+
+void login(){
+    char lemail[50];
+    char lpassword[50];
+    int Echeck =-1;
+
+    printf("This is login \n Please enter your email\n");
+    scanf(" %[^\n]",lemail);
+    for(int i=0; i<registrationCount ; i++){
+        if(compare(lemail,info[i].email)){
+            Echeck=i;
+
+        }
+    }
+
+    printf("Enter your password\n");
+    scanf(" %[^\n]",lpassword);
+
+    if(compare(lpassword,info[Echeck].password) && Echeck !=-1){
+        printf("Welcome sir %s :", info[Echeck].name);
+    }else{printf("Something Wrong!\nPlease check your email and password again\n");
+    login();}
+
+}
+
+void LandingPage(){
+    int Landing=0;
+
+    printf("This is LandingPage\n");
+    printf("Press 1 to register\n");
+    printf("Press 2 to Login\n");
+    printf("Press 3 to Exit\n");
+    scanf("%d",&Landing);
+
+    if(Landing == 1){
+        registration();
+    }else if(Landing == 2){
+        login();
+    }else if(Landing == 3){
+        exit(1);
+    }else{
+        printf("Invalid Option : Press Again \n");
+        LandingPage();
+    }
+
+}
+
+void printingAllData(){
+    for(int i=0; i<registrationCount; i++){
+        printf(" Id : %d \n Age : %d \n Name : %s \n Email : %s \n Password : %s \n", info[i].id , info[i].age, info[i].name , info[i].email, info[i].password);
+    }
+}
+
